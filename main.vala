@@ -3,14 +3,11 @@ using Gdk;
 using Cairo;
 
 public class AnimationExample : Gtk.Window {
+    private Cairo.Surface? surface = null;
 
-    // the global surface that will serve as our buffer
-    private Cairo.Surface? surface;
-
-    private int oldw;
-    private int oldh;
-
-    private int i_draw;
+    private int draw_width;
+    private int draw_height;
+    private int step;
 
     public AnimationExample () {
         // constructor chain up
@@ -26,47 +23,51 @@ public class AnimationExample : Gtk.Window {
         this.destroy.connect (Gtk.main_quit);
     }
 
-    private bool on_draw (Gtk.Widget sender, Cairo.Context cr) {
-        cr.set_source_surface(this.surface, 0, 0);
-        cr.paint();
+    private bool on_draw (Gtk.Widget sender, Cairo.Context ctx) {
+        if (this.surface != null) {
+            ctx.set_source_surface(this.surface, 0, 0);
+            ctx.paint();
+        }
         return false;
     }
 
     private bool on_configure_event (Gtk.Widget sender, Gdk.EventConfigure event) {
         // create our new surface with the correct size.
-        var tmpsurface = sender.get_window().create_similar_surface (Cairo.Content.COLOR,
-                                                                     event.width,
-                                                                     event.height);
+        var widget_window = sender.get_window();
+        var tmpsurface = widget_window.create_similar_surface (Cairo.Content.COLOR,
+                                                               event.width,
+                                                               event.height);
+        var ctx = new Cairo.Context (tmpsurface);
+        ctx.set_source_rgb (0.9, 0.9, 0.9);
+        ctx.paint ();
         // set up our surface so it is ready for drawing
-        if (this.surface != null && (this.oldw != event.width || this.oldh != event.height)) {
+        if (this.surface != null) {
             // copy the contents of the old surface to the new surface.
-            var cr = new Cairo.Context (tmpsurface);
-            cr.set_source_surface (this.surface, 0, 0);
-            cr.paint ();
+            ctx.set_source_surface(this.surface, 0, 0);
+            ctx.paint();
         }
         this.surface = tmpsurface;
-        this.oldw = event.width;
-        this.oldh = event.height;
+        this.draw_width = event.width;
+        this.draw_height = event.height;
         return true;
     }
 
     // do_draw will be executed whenever we would like to update our animation
     private void do_draw () {
-        //create a gtk-independant surface to draw on
-        var cr = new Cairo.Context (this.surface);
+        if (this.surface == null) return;
 
-        this.i_draw += 4;   // give movement to our animation
-        this.i_draw %= this.oldw;
-        cr.set_source_rgb (0.9, 0.9, 0.9);
-        cr.paint ();
-        cr.set_source_rgb ((double) this.i_draw / this.oldw,
-                           (double) this.i_draw / this.oldw,
-                           1.0 - (double) this.i_draw / this.oldw);
-        cr.rectangle ((double) this.i_draw, (double) this.oldh / 2.0, 100, 100); 
-        cr.stroke ();
+        this.step += 4; // give movement to our animation
+        this.step %= this.draw_width;
+
+        var ctx = new Cairo.Context (this.surface);
+        ctx.set_source_rgb((double) this.step / this.draw_width,
+                           (double) this.step / this.draw_width,
+                           1.0 - (double) this.step / this.draw_width);
+        ctx.rectangle((double) this.step, (double) this.draw_height / 2.0, 100, 100); 
+        ctx.stroke();
 
         // tell our window it is time to draw our animation.
-        this.queue_draw ();
+        this.queue_draw();
     }
 
     static int main (string[] args){
