@@ -51,16 +51,14 @@ public class AnimationExample : Gtk.Window {
     }
 
     // do_draw will be executed whenever we would like to update our animation
-    private void* do_draw () {
+    private void do_draw () {
         //create a gtk-independant surface to draw on
         var cr = new Cairo.Context (this.surface);
 
-        // do some time-consuming drawing
         this.i_draw += 4;   // give movement to our animation
         this.i_draw %= this.oldw;
         cr.set_source_rgb (0.9, 0.9, 0.9);
         cr.paint ();
-        // let's just redraw lots of times to use a lot of proc power
         cr.set_source_rgb ((double) this.i_draw / this.oldw,
                            (double) this.i_draw / this.oldw,
                            1.0 - (double) this.i_draw / this.oldw);
@@ -69,8 +67,6 @@ public class AnimationExample : Gtk.Window {
 
         // tell our window it is time to draw our animation.
         this.queue_draw ();
-
-        return null;
     }
 
     static int main (string[] args){
