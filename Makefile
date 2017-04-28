@@ -1,5 +1,5 @@
 .PHONY: all
-all: bin/anim bin/draw
+all: bin/anim bin/draw bin/text
 
 bin/%: %.vala
 	mkdir -p bin
