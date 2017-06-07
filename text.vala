@@ -47,6 +47,7 @@ public class Texter : Gtk.Window {
         var layout = Pango.cairo_create_layout(ctx);
         layout.set_font_description(Pango.FontDescription.from_string("Sans 24"));
         layout.set_width(Pango.units_from_double(event.width - 2 * this.padding));
+        layout.set_auto_dir(false);
         layout.set_text(this.text, this.text.length);
         ctx.move_to(this.padding, this.padding);
         ctx.set_source_rgb (0.25, 0.25, 0.25);
